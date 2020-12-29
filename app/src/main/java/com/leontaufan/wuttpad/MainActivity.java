@@ -25,15 +25,12 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private MyRecyclerAdapter adapter;
     private List<ModelPerson> personArrayList;
-    private ViewSwitcher switcher;
-    //    private View emptyState;
     private MySQLiteHelper helper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        emptyState = findViewById(R.id.empty_state);
 
         /* Akses ke SQLite dan memasukkannya ke variabel */
         helper = new MySQLiteHelper(this);
@@ -67,7 +64,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void addData() {
         /* Data placeholder */
-
+        helper.addPerson(new ModelPerson(new Random().nextInt(), "Leonardo", "L", "21/12/1998"));
+        //todo: Tambahkan fitur menginput data sendiri
+        
         /* Menjalankan method refreshStatus() */
         refreshStatus();
     }

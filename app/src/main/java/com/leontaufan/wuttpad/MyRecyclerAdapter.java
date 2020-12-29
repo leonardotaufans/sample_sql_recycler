@@ -16,12 +16,28 @@ import java.util.List;
 
 public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.MyViewHolder> {
 
+    /**
+     * Data personList akan diambil dari MainActivity saat inisialisasi RecyclerView
+     * {@link MainActivity}
+     */
     private List<ModelPerson> personList;
 
+    /**
+     * Constructor ini akan mengisi data personList di atas
+     * @param personList datang dari atas sana ^
+     */
     public MyRecyclerAdapter(List<ModelPerson> personList) {
         this.personList = personList;
     }
 
+    /**
+    Secara berurutan, yang harus dibaca adalah
+     1. MyViewHolder (untuk inisialisasi layout RecyclerView) {@link MyViewHolder}
+     2. onCreateViewHolder (yang menampilkan layout dari viewholder) {@link MyRecyclerAdapter#onCreateViewHolder}
+     3. onBindViewHolder (untuk memasukkan data ke dalam layout {@link MyRecyclerAdapter#onBindViewHolder}
+
+     onCreateViewHolder bertugas untuk memunculkan child layout (di kasus ini person_card.xml) ke dalam RecyclerView.
+     */
     @NonNull
     @Override
     public MyRecyclerAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -30,6 +46,13 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
         return new MyViewHolder(view);
     }
 
+    /**
+     * onBindViewHolder digunakan untuk menginput data yang ada di child layout.
+     *
+     * @param holder datang dari MyViewHolder {@link MyViewHolder} yang memegang View.
+     * @param position datang dari RecyclerView yang menunjukkan
+     *                 posisi view yang sedang diisi.
+     */
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         holder.name.setText(personList.get(position).getName());
@@ -46,11 +69,20 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
         });
     }
 
+    /**
+     * getItemCount digunakan untuk menghitung jumlah item yang ada di RecyclerView. Nilai diambil
+     * dari {@link #personList}
+     * @return harus memeriksa null jika data masih benar-benar kosong.
+     */
     @Override
     public int getItemCount() {
         return (personList != null) ? personList.size() : 0;
     }
 
+    /**
+     * MyViewHolder adalah child class dari ViewHolder (tentunya)
+     * yang ditujukan untuk mengendalikan child layout.
+     */
     public class MyViewHolder extends RecyclerView.ViewHolder {
         private TextView name, birth, gender;
         private Button update, delete;

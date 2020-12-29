@@ -45,12 +45,18 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * perlu dilakukan adalah membuat tabel terlebih dahulu jika diperlukan.
      */
 
-    private Context context;
 
     public MySQLiteHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    /**
+     * SQLiteDatabase.execSQL {@link SQLiteDatabase#execSQL(String)} adalah perintah untuk menjalankan query SQL biasa.
+     * String.format {@link String#format(String, Object...)}adalah pengganti dari tanda + (contoh: "CREATE TABLE" + TABLE_NAME +
+     * "(" + ... (dan seterusnya), membuat query lebih terbaca.
+     * Penjelasan String.format() => https://www.javatpoint.com/java-string-format
+     * @param sqLiteDatabase merupakan inheritance dari SQLiteDatabase.
+     */
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(String.format(
@@ -58,26 +64,36 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                 TABLE_PERSON, PERSON_ID, PERSON_NAME, PERSON_BIRTH, PERSON_GENDER)
         );
 
-        /*
-         * SQLiteDatabase.execSQL adalah perintah untuk menjalankan query SQL biasa.
-         * String.format adalah pengganti dari tanda + (contoh: "CREATE TABLE" + TABLE_NAME +
-         * "(" + ... (dan seterusnya), membuat query lebih terbaca.
-         *
-         * Penjelasan String.format() => https://www.javatpoint.com/java-string-format
-         */
+
     }
 
+
+    /**
+     * Pada onUpgrade, jika ada pembaruan versi database maka tabel akan didrop,
+     * kemudian dibuat ulang dengan menjalankan onCreate()
+     */
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_PERSON);
         onCreate(sqLiteDatabase);
 
-        /* Pada onUpgrade, jika ada pembaruan versi database maka tabel akan didrop,
-         * kemudian dibuat ulang dengan menjalankan onCreate()
-         */
     }
 
-    // CRUD
+
+    /**
+     * [[addPerson]]
+     * Pada create ini, SQLiteDatabase akan meminta database yang bisa ditulis, dalam
+     * kasus ini tabel PersonDatabase.
+     * <p>
+     * ContentValues digunakan untuk menggabungkan dan menyimpan sementara data dari
+     * person yang akan dimasukkan. Di sinilah kegunaan dari model class.
+     * <p>
+     * SQLiteDatabase memiliki method insert() dan tidak membutuhkan query.
+     * insert() akan meminta nama tabel. nullColumnHack
+     * (agar dapat mengisi kolom dengan nilai null), dan ContentValues
+     *
+     * @param person digunakan sebagai jembatan untuk pengambilan data.
+     */
     public void addPerson(ModelPerson person) {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -90,20 +106,38 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         Log.d("DEBUG_NANI", values.getAsString(PERSON_NAME));
         db.insert(TABLE_PERSON, null, values);
         db.close();
-        /* Pada create ini, SQLiteDatabase akan meminta database yang bisa ditulis, dalam
-         * kasus ini tabel PersonDatabase.
-         *
-         * ContentValues digunakan untuk menggabungkan dan menyimpan sementara data dari
-         * person yang akan dimasukkan. Di sinilah kegunaan dari model class.
-         *
-         * SQLiteDatabase memiliki method insert() dan tidak membutuhkan query.
-         * insert() akan meminta nama tabel. nullColumnHack
-         * (agar dapat mengisi kolom dengan nilai null), dan ContentValues
-         */
+
     }
 
-    // Read berdasarkan nama
-    public ModelPerson getPersonByName(int id) {
+    /**
+     * [[getPersonById()]]
+     * Pada getPersonById, dijalankan db.query(). db.query() meminta sejumlah data:
+     * - Nama tabel (String),
+     * - Daftar kolom dalam bentuk ArrayList (lihat di baris 40),
+     * - selection (WHERE pada SQL Query);
+     * Note:
+     * Pada PERSON_ID +  "=?", tanda tanya tersebut akan diisi oleh selectionArgs
+     * ini mirip dengan parameterized queries
+     * (https://www.ptsecurity.com/ww-en/analytics/knowledge-base/how-to-prevent-sql-injection-attacks)
+     * <p>
+     * - selectionArgs dalam bentuk ArrayList String,
+     * - groupBy (nama kolom), having (function), orderBy (nama kolom), dan limit.
+     * <p>
+     * Cursor, seperti namanya, akan menunjukkan posisi dimana kursor saat ini pada tabel,
+     * dan menyimpan sementara data tersebut.
+     * <p>
+     * Setelah query dijalankan, maka diperiksa apakah cursor menghasilkan null, dan jika tidak,
+     * maka Cursor akan dipindahkan ke daftar paling atas dari tabel.
+     * <p>
+     * getPersonByName() akan mengembalikan data berupa model class ModelPerson, yang dapat
+     * dibaca oleh RecyclerView nantinya.
+     *
+     * @param id adalah ID yang dimiliki orang tersebut, dan akan berguna untuk melakukan editing atau
+     *           membuat layout detail
+     * @return akan mengikuti urutan dari yang ada di tabel. Hati-hati untuk tidak melakukan kesalahan
+     * input atau tertukar posisinya di sini.
+     */
+    public ModelPerson getPersonById(int id) {
         SQLiteDatabase db = getReadableDatabase();
         @SuppressLint("Recycle")
         Cursor cursor = db.query(
@@ -122,29 +156,26 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         return new ModelPerson(
                 cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3));
 
-        /*
-         * Pada getPersonByName, dijalankan db.query(). db.query() meminta sejumlah data:
-         * - Nama tabel (String),
-         * - Daftar kolom dalam bentuk ArrayList (lihat di baris 40),
-         * - selection (WHERE pada SQL Query);
-         *      Pada PERSON_ID +  "=?", tanda tanya tersebut akan diisi oleh selectionArgs
-         *      ini adalah parameterized queries
-         *      (https://www.ptsecurity.com/ww-en/analytics/knowledge-base/how-to-prevent-sql-injection-attacks)
-         * - selectionArgs dalam bentuk ArrayList String,
-         * - groupBy (nama kolom), having (function), orderBy (nama kolom), dan limit.
-         *
-         * Cursor, seperti namanya, akan menunjukkan posisi dimana kursor saat ini pada tabel,
-         * dan menyimpan sementara data tersebut.
-         *
-         * Setelah query dijalankan, maka diperiksa apakah cursor menghasilkan null, dan jika tidak,
-         * maka Cursor akan dipindahkan ke daftar paling atas dari tabel.
-         *
-         * getPersonByName() akan mengembalikan data berupa model class ModelPerson, yang dapat
-         * dibaca oleh RecyclerView nantinya.
-         */
+
     }
 
     // Read semua data
+
+    /**
+     * Sebelumnya pada getPersonByName(), db.query() meminta sejumlah data, termasuk selection
+     * dan selectionArgs. Tetapi, jika kedua data tersebut diberikan null, maka semua data akan
+     * diambil oleh Cursor.
+     * <p>
+     * Oleh karena itu, dibutuhkan penampungan data sementara berupa List ModelPerson, atau
+     * kumpulan dari ModelPerson.
+     * <p>
+     * Setelah memeriksa apakah Cursor menghasilkan null, cursor akan dipindahkan ke paling
+     * pertama. Lalu, do-while digunakan untuk, pada dasarnya, melakukan getPersonByName secara
+     * berulang-ulang hingga cursor tidak menemukan data lagi.
+     * <p>
+     * Kemudian cursor akan meletakkan data tersebut pada List ModelPerson bernama personList
+     * untuk kemudian di-return.
+     */
     public List<ModelPerson> getAllPerson() {
         SQLiteDatabase db = getReadableDatabase();
         List<ModelPerson> personList = new ArrayList<>();
@@ -172,23 +203,13 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         db.close();
         return personList;
 
-        /*
-         * Sebelumnya pada getPersonByName(), db.query() meminta sejumlah data, termasuk selection
-         * dan selectionArgs. Tetapi, jika kedua data tersebut diberikan null, maka semua data akan
-         * diambil oleh Cursor.
-         *
-         * Oleh karena itu, dibutuhkan penampungan data sementara berupa List ModelPerson, atau
-         * kumpulan dari ModelPerson.
-         *
-         * Setelah memeriksa apakah Cursor menghasilkan null, cursor akan dipindahkan ke paling
-         * pertama. Lalu, do-while digunakan untuk, pada dasarnya, melakukan getPersonByName secara
-         * berulang-ulang hingga cursor tidak menemukan data lagi.
-         *
-         * Kemudian cursor akan meletakkan data tersebut pada List ModelPerson bernama personList
-         * untuk kemudian di-return.
-         */
+
     }
 
+    /**
+     * {@link #updatePerson} hampir sama dengan db.insert(), tetapi meminta where dan whereArgs seperti
+     * getPersonByName().
+     */
     public int updatePerson(ModelPerson person) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -203,20 +224,18 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(person.getId())}
         );
 
-        /*
-         * db.update() hampir sama dengan db.insert(), tetapi meminta where dan whereArgs seperti
-         * getPersonByName().
-         */
+
     }
 
+    /**
+     * db.delete hanya meminta person ID yang harus dihapus, dan sudah ada di ModelPerson.
+     */
     public void deletePerson(ModelPerson person) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(TABLE_PERSON,
                 PERSON_ID + " = ? ",
                 new String[]{String.valueOf(person.getId())});
         db.close();
-        /*
-         * db.delete hanya meminta person ID yang harus dihapus.
-         */
+
     }
 }
