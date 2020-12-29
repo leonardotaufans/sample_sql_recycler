@@ -1,5 +1,6 @@
 package com.leontaufan.wuttpad;
 
+import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,12 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.MyViewHolder> {
 
-    private ArrayList<ModelPerson> personList;
+    private List<ModelPerson> personList;
 
-    public MyRecyclerAdapter(ArrayList<ModelPerson> personList) {
+    public MyRecyclerAdapter(List<ModelPerson> personList) {
         this.personList = personList;
     }
 
@@ -33,10 +35,10 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
         holder.name.setText(personList.get(position).getName());
         holder.birth.setText(personList.get(position).getDateOfBirth());
         holder.gender.setText(personList.get(position).getGender());
-
         holder.update.setOnClickListener(view -> {
             // todo: Melakukan update pada database
             Log.d("DEBUG", "Update!");
+
         });
         holder.delete.setOnClickListener(view -> {
             //todo: Melakukan delete pada database

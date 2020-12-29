@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -28,7 +29,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     // Nama database
     private static final String DATABASE_NAME = "PersonDatabase";
     // Database version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     // Nama tabel
     private static final String TABLE_PERSON = "person_table";
     // Nama kolom
@@ -44,6 +45,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
      * perlu dilakukan adalah membuat tabel terlebih dahulu jika diperlukan.
      */
 
+    private Context context;
+
     public MySQLiteHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -51,7 +54,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(String.format(
-                "CREATE TABLE %s ( %s INTEGER PRIMARY KEY, %s TEXT, %s TEXT, %s TEXT",
+                "CREATE TABLE %s ( %s INTEGER PRIMARY KEY, %s TEXT, %s TEXT, %s TEXT)",
                 TABLE_PERSON, PERSON_ID, PERSON_NAME, PERSON_BIRTH, PERSON_GENDER)
         );
 
@@ -84,8 +87,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         values.put(PERSON_BIRTH, person.getDateOfBirth());
         values.put(PERSON_GENDER, person.getGender());
 
+        Log.d("DEBUG_NANI", values.getAsString(PERSON_NAME));
         db.insert(TABLE_PERSON, null, values);
-
+        db.close();
         /* Pada create ini, SQLiteDatabase akan meminta database yang bisa ditulis, dalam
          * kasus ini tabel PersonDatabase.
          *
@@ -111,6 +115,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         if (cursor != null) {
             cursor.moveToFirst();
         }
+
+        db.close();
+        cursor.close();
 
         return new ModelPerson(
                 cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3));
@@ -145,21 +152,24 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         @SuppressLint("Recycle")
         Cursor cursor = db.query(
                 TABLE_PERSON, columns,
-                null, null, null, null, null, null);
+                null, null, null, null, PERSON_NAME, null);
 
-        if (cursor != null) {
+        if (cursor != null && cursor.getCount() > 0) {
             if (cursor.moveToFirst()) {
                 do {
+                    Log.d("DEBUG_WUTT", cursor.getString(1));
                     ModelPerson person = new ModelPerson(
                             cursor.getInt(0),
+                            cursor.getString(0),
                             cursor.getString(1),
-                            cursor.getString(2),
-                            cursor.getString(3)
+                            cursor.getString(2)
                     );
                     personList.add(person);
                 } while (cursor.moveToNext());
             }
         }
+        cursor.close();
+        db.close();
         return personList;
 
         /*
@@ -187,15 +197,16 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         values.put(PERSON_BIRTH, person.getDateOfBirth());
         values.put(PERSON_GENDER, person.getGender());
 
+        db.close();
         return db.update(TABLE_PERSON, values,
                 PERSON_ID + " = ? ",
                 new String[]{String.valueOf(person.getId())}
         );
 
         /*
-        * db.update() hampir sama dengan db.insert(), tetapi meminta where dan whereArgs seperti
-        * getPersonByName().
-        */
+         * db.update() hampir sama dengan db.insert(), tetapi meminta where dan whereArgs seperti
+         * getPersonByName().
+         */
     }
 
     public void deletePerson(ModelPerson person) {
@@ -203,8 +214,9 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         db.delete(TABLE_PERSON,
                 PERSON_ID + " = ? ",
                 new String[]{String.valueOf(person.getId())});
+        db.close();
         /*
-        * db.delete hanya meminta person ID yang harus dihapus.
-        */
+         * db.delete hanya meminta person ID yang harus dihapus.
+         */
     }
 }
