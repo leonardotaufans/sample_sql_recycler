@@ -26,54 +26,49 @@ public class MainActivity extends AppCompatActivity {
     private MyRecyclerAdapter adapter;
     private List<ModelPerson> personArrayList;
     private ViewSwitcher switcher;
-    private View emptyState;
+    //    private View emptyState;
     private MySQLiteHelper helper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        emptyState = findViewById(R.id.empty_state);
-        switcher = findViewById(R.id.switcher);
+//        emptyState = findViewById(R.id.empty_state);
+
+        /* Akses ke SQLite dan memasukkannya ke variabel */
         helper = new MySQLiteHelper(this);
         personArrayList = helper.getAllPerson();
-        Log.d("DEBUG_WUTT", personArrayList.toString());
 
-        // Bagian ini tidak relevan, ini karena menggunakan switcher
-        Animation animationIn = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
-        Animation animationOut = AnimationUtils.loadAnimation(this, android.R.anim.fade_out);
-        switcher.setInAnimation(animationIn);
-        switcher.setOutAnimation(animationOut);
-        LottieAnimationView lottie = findViewById(R.id.lottieAnimationView);
-        lottie.setAnimationFromUrl("https://assets8.lottiefiles.com/temp/lf20_Celp8h.json");
-        FloatingActionButton fab = findViewById(R.id.fab_add);
-
+        /* Recycler View dan kawan-kawannya */
         recyclerView = findViewById(R.id.recyclerView);
         adapter = new MyRecyclerAdapter(personArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(adapter);
 
+        /* Floating Action Button */
+        FloatingActionButton fab = findViewById(R.id.fab_add);
         fab.setOnClickListener(view -> {
             addData();
         });
 
-        recyclerView.setLayoutManager(layoutManager);
-
-        recyclerView.setAdapter(adapter);
 
     }
 
     private void refreshStatus() {
+        /* Dijalankan jika ada update. Array di-clear terlebih dahulu agar tidak muncul duplikat. */
         personArrayList.clear();
         personArrayList.addAll(helper.getAllPerson());
+
+        /* Method dari RecyclerAdapter. Digunakan untuk melakukan notifikasi bila data sudah berubah. */
         adapter.notifyDataSetChanged();
     }
 
-    
 
     private void addData() {
-        helper.addPerson(new ModelPerson(new Random().nextInt(), "Leonardo", "21/12/1998", "L"));
-        helper.addPerson(new ModelPerson(new Random().nextInt(), "Taufan", "21/12/1998", "L"));
-        helper.addPerson(new ModelPerson(new Random().nextInt(), "Sontani", "21/12/1998", "L"));
-        helper.addPerson(new ModelPerson(new Random().nextInt(), "Errenzii", "21/12/1998", "L"));
+        /* Data placeholder */
+
+        /* Menjalankan method refreshStatus() */
         refreshStatus();
     }
 }
