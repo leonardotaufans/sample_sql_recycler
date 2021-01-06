@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,24 +33,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /* Akses ke SQLite dan memasukkannya ke variabel */
-        helper = new MySQLiteHelper(this);
-        personArrayList = helper.getAllPerson();
+//        /* Akses ke SQLite dan memasukkannya ke variabel */
+//        helper = new MySQLiteHelper(this);
+//        personArrayList = helper.getAllPerson();
+//
+//        /* Recycler View dan kawan-kawannya */
+//        recyclerView = findViewById(R.id.recyclerView);
+//        adapter = new MyRecyclerAdapter(personArrayList);
+//        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
+//        recyclerView.setLayoutManager(layoutManager);
+//        recyclerView.setAdapter(adapter);
+//
+//        /* Floating Action Button */
+//        FloatingActionButton fab = findViewById(R.id.fab_add);
+//        fab.setOnClickListener(view -> {
+//            addData();
+//        });
 
-        /* Recycler View dan kawan-kawannya */
-        recyclerView = findViewById(R.id.recyclerView);
-        adapter = new MyRecyclerAdapter(personArrayList);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
-
-        /* Floating Action Button */
-        FloatingActionButton fab = findViewById(R.id.fab_add);
-        fab.setOnClickListener(view -> {
-            addData();
+        findViewById(R.id.buttonFragment).setOnClickListener(view -> {
+            startActivity(new Intent(MainActivity.this, SecondActivity.class));
         });
-
-
     }
 
     private void refreshStatus() {
