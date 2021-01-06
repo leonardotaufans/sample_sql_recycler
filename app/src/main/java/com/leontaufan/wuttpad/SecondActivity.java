@@ -1,5 +1,6 @@
 package com.leontaufan.wuttpad;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -13,12 +14,12 @@ public class SecondActivity extends AppCompatActivity {
 
     FrameLayout frameForFragment;
     boolean isfirstFragment = true;
-    FragmentTransaction transaction;
 
     /**
      * Untuk melihat salah satu penggunaan utama dari Fragment, lihat tutorial ini:
      * https://guides.codepath.com/android/fragment-navigation-drawer
      */
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
